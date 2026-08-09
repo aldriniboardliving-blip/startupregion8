@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-600: #0e7080;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 antialiased;
+}
+
+.container-x {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow hover:bg-brand-700 focus:ring-brand-500;
+  }
+  .btn-secondary {
+    @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-slate-400;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white shadow hover:bg-red-700 focus:ring-red-500;
+  }
+  .input {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+  .section-title {
+    @apply text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl;
+  }
+}
+
+/* Empty state icon pulse */
+@keyframes empty-pulse {
+  0% { transform: scale(0.85); opacity: 0.7; }
+  70% { transform: scale(1.25); opacity: 0; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+.empty-pulse {
+  animation: empty-pulse 2.2s ease-out infinite;
+}
+
+/* Illustration scene motion */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.illustration-float {
+  animation: float-y 5s ease-in-out infinite;
+}
+.illustration-float-delayed {
+  animation: float-y 6s ease-in-out 1.2s infinite;
+}
+@keyframes launch {
+  0% { transform: translateY(14px); }
+  55%, 100% { transform: translateY(-6px); }
+}
+.illustration-launch {
+  animation: launch 3.6s ease-in-out infinite;
+}
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.illustration-orbit {
+  animation: orbit 14s linear infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* Carousel animations */
+.carousel-track {
+  display: flex;
+  transition: transform 0.6s ease-in-out;
+}
+@keyframes kenburns {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+.kenburns {
+  animation: kenburns 8s ease-in-out infinite alternate;
+}
+
+/* Rich text content (blogs, news, government pages) */
+.prose-content {
+  @apply text-slate-700 leading-relaxed;
+}
+.prose-content h1 { @apply mt-8 mb-4 text-3xl font-bold text-slate-900; }
+.prose-content h2 { @apply mt-8 mb-3 text-2xl font-bold text-slate-900; }
+.prose-content h3 { @apply mt-6 mb-2 text-xl font-semibold text-slate-900; }
+.prose-content p { @apply my-4; }
+.prose-content ul { @apply my-4 list-disc pl-6; }
+.prose-content ol { @apply my-4 list-decimal pl-6; }
+.prose-content a { @apply text-brand-600 underline hover:text-brand-700; }
+.prose-content img { @apply my-6 rounded-xl; }
+.prose-content blockquote { @apply my-6 border-l-4 border-brand-500 bg-brand-50 px-5 py-3 italic text-slate-600; }
+.prose-content pre { @apply my-6 overflow-x-auto rounded-xl bg-slate-900 p-4 text-sm text-slate-100; }
+.prose-content code { @apply rounded bg-slate-100 px-1.5 py-0.5 text-sm; }
+.prose-content pre code { @apply bg-transparent p-0; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
