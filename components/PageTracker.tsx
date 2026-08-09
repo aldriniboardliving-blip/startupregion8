@@ -41,23 +41,30 @@ export default function PageTracker() {
   const pathname = usePathname();
   const pathRef = useRef(pathname);
   const startRef = useRef(Date.now());
+  const sentRef = useRef(false);
+
+  function flushCurrent(): void {
+    if (sentRef.current) return;
+    sendVisit(pathRef.current, Date.now() - startRef.current);
+    sentRef.current = true;
+  }
 
   // On route change, record time spent on the previous page.
   useEffect(() => {
     const prevPath = pathRef.current;
     const prevStart = startRef.current;
     if (prevPath !== pathname) {
-      sendVisit(prevPath, Date.now() - prevStart);
+      if (!sentRef.current) sendVisit(prevPath, Date.now() - prevStart);
       pathRef.current = pathname;
       startRef.current = Date.now();
+      sentRef.current = false;
     }
   }, [pathname]);
 
-  // On leave/hide, record time on the current page.
+  // On leave/hide, record time on the current page (deduped — pagehide,
+  // beforeunload and visibilitychange can all fire for a single leave).
   useEffect(() => {
-    const flush = () => {
-      sendVisit(pathRef.current, Date.now() - startRef.current);
-    };
+    const flush = flushCurrent;
     const onVisibility = () => {
       if (document.visibilityState === "hidden") flush();
     };

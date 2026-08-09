@@ -6,6 +6,21 @@
   --brand-600: #0e7080;
 }
 
+/* Page enter transition (used by PageTransition on every route change) */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-page-enter {
+  animation: page-enter 0.3s ease-out both;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -14,31 +29,42 @@ body {
   @apply bg-slate-50 text-slate-800 antialiased;
 }
 
+/* Smooth interaction by default for all interactive elements */
+@layer base {
+  a,
+  button {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 .container-x {
   @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white shadow hover:bg-brand-700 focus:ring-brand-500;
+    @apply btn bg-brand-600 text-white shadow hover:bg-brand-700 hover:shadow-md focus:ring-brand-500;
   }
   .btn-secondary {
-    @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-slate-400;
+    @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 focus:ring-slate-400;
   }
   .btn-danger {
-    @apply btn bg-red-600 text-white shadow hover:bg-red-700 focus:ring-red-500;
+    @apply btn bg-red-600 text-white shadow hover:bg-red-700 hover:shadow-md focus:ring-red-500;
   }
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30;
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition-colors duration-200 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30;
   }
   .label {
     @apply mb-1.5 block text-sm font-medium text-slate-700;
   }
   .card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200;
   }
   .section-title {
     @apply text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl;

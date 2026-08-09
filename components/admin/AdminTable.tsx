@@ -32,6 +32,11 @@ export default function AdminTable({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 10;
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
 
   async function load(): Promise<void> {
     setLoading(true);
@@ -63,6 +68,7 @@ export default function AdminTable({
       const res = await fetch(`${apiUrl}?id=${row._id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
       setRows((r) => r.filter((x) => x._id !== row._id));
+      setPage(1);
     } catch (e) {
       alert(e instanceof Error ? e.message : "Failed to delete");
     } finally {
@@ -104,7 +110,7 @@ export default function AdminTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {rows.map((row) => (
+              {pageRows.map((row) => (
                 <tr key={row._id} className="hover:bg-slate-50">
                   {renderRow(row).map((cell, i) => (
                     <td key={i} className="px-5 py-4 text-slate-700">
@@ -132,6 +138,33 @@ export default function AdminTable({
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {rows.length > pageSize && (
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-slate-400">
+            Showing {Math.min(pageSize, rows.length)} of {rows.length}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="btn-secondary px-3 py-1.5 text-xs disabled:opacity-40"
+            >
+              ← Prev
+            </button>
+            <span className="text-xs text-slate-500">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="btn-secondary px-3 py-1.5 text-xs disabled:opacity-40"
+            >
+              Next →
+            </button>
+          </div>
         </div>
       )}
     </div>

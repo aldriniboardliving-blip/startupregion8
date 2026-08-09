@@ -180,9 +180,14 @@ export interface TrafficPageStat {
   avgDurationMs: number;
 }
 
+export type TrafficRange = "day" | "week" | "month" | "year" | "all";
+
 export interface TrafficData {
   totalVisits: number;
   uniqueVisitors: number;
   avgSessionMs: number;
   pages: TrafficPageStat[];
+  totalPages: number;
+  page: number;
+  pageSize: number;
 }
