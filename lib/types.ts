@@ -165,3 +165,24 @@ export interface LocationPayload {
   lng: number;
   placeId?: string;
 }
+
+export interface VisitDoc {
+  visitorId: string;
+  path: string;
+  durationMs: number;
+  visitedAt: Date;
+}
+
+export interface TrafficPageStat {
+  path: string;
+  views: number;
+  totalDurationMs: number;
+  avgDurationMs: number;
+}
+
+export interface TrafficData {
+  totalVisits: number;
+  uniqueVisitors: number;
+  avgSessionMs: number;
+  pages: TrafficPageStat[];
+}
