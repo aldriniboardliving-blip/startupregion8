@@ -5,6 +5,7 @@ import ImageWithFallback from "@/components/ImageWithFallback";
 import { getBySlug, getGovernmentPages } from "@/lib/data";
 import { collections } from "@/lib/mongodb";
 import { formatDate } from "@/lib/utils";
+import { normalizeContentHtml } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -91,7 +92,7 @@ export default async function GovernmentDetailPage({ params }: PageProps) {
         )}
         <div
           className="prose-content mt-8"
-          dangerouslySetInnerHTML={{ __html: item.content || "" }}
+          dangerouslySetInnerHTML={{ __html: normalizeContentHtml(item.content || "") }}
         />
       </div>
 

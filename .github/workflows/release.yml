@@ -1,0 +1,45 @@
+name: Auto Version & Tag
+
+# Only pushes to `main` trigger this. Feature/bugfix branches never bump the
+# version and never create a tag (they also don't fire this workflow at all).
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'branch' && github.ref_name == 'main'
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Compute and apply version bump
+        id: version
+        run: node scripts/release-version.mjs
+
+      - name: Push version commit and tag to main
+        if: fromJSON(steps.version.outputs.bumped)
+        run: |
+          git push origin main
+          git push origin refs/tags/${{ steps.version.outputs.tag }}:refs/tags/${{ steps.version.outputs.tag }}
+
+      - name: Create GitHub Release
+        if: fromJSON(steps.version.outputs.bumped)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
