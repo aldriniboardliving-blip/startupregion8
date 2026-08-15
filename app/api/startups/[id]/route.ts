@@ -3,6 +3,7 @@ import { getDb, collections } from "@/lib/mongodb";
 import { isAuthed } from "@/lib/auth";
 import { normalizeProvince, toPublicStartup } from "@/lib/utils";
 import { resolveStartupSlug } from "@/lib/data";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { modifyResult } from "@/lib/crud";
 import { ObjectId } from "mongodb";
 import type { FounderInput, Funding, FundingInput, StartupDoc } from "@/lib/types";
@@ -30,6 +31,9 @@ interface StartupBody {
 }
 
 export async function GET(req: Request, { params }: RouteContext): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.publicGet);
+  if (limited) return limited;
+  const authed = await isAuthed();
   const db = await getDb();
   let oid: ObjectId;
   try {
@@ -38,7 +42,8 @@ export async function GET(req: Request, { params }: RouteContext): Promise<NextR
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   const startup = (await db.collection(collections.startups).findOne({ _id: oid })) as unknown as StartupDoc | null;
-  if (!startup) {
+  // Hide de-listed/inactive startups from anonymous visitors.
+  if (!startup || (!authed && startup.status === "inactive")) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   const founders = await db
@@ -65,6 +70,8 @@ export async function GET(req: Request, { params }: RouteContext): Promise<NextR
 }
 
 export async function PUT(req: Request, { params }: RouteContext): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.mutation);
+  if (limited) return limited;
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -157,6 +164,8 @@ export async function PUT(req: Request, { params }: RouteContext): Promise<NextR
 }
 
 export async function DELETE(req: Request, { params }: RouteContext): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.mutation);
+  if (limited) return limited;
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

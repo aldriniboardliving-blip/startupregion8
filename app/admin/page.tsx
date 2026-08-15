@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PROVINCES } from "@/lib/utils";
+import { SkeletonDashboard } from "@/components/Skeleton";
 import type { AnalyticsData } from "@/lib/types";
 
 export default function AdminDashboard() {
@@ -22,13 +23,7 @@ export default function AdminDashboard() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="card h-32 animate-pulse bg-slate-100" />
-        ))}
-      </div>
-    );
+    return <SkeletonDashboard />;
   }
 
   if (error) {

@@ -78,7 +78,7 @@ export async function getStartups(options: GetStartupsOptions = {}): Promise<Sta
           (s) => (s.slug || startupSlug(s.companyName)) === slug
         ) || null;
     }
-    if (!startup) return null;
+    if (!startup || startup.status === "inactive") return null;
     const founders = await db.collection(collections.founders).find({ startupId: startup._id }).toArray();
     const fundings = await db.collection(collections.fundings).find({ startupId: startup._id }).toArray();
     return toPublicStartup({
@@ -96,7 +96,7 @@ export async function getStartups(options: GetStartupsOptions = {}): Promise<Sta
       return null;
     }
     const startup = (await db.collection(collections.startups).findOne({ _id: oid })) as unknown as StartupDoc | null;
-    if (!startup) return null;
+    if (!startup || startup.status === "inactive") return null;
     const founders = await db.collection(collections.founders).find({ startupId: oid }).toArray();
     const fundings = await db.collection(collections.fundings).find({ startupId: oid }).toArray();
     return toPublicStartup({
@@ -109,6 +109,8 @@ export async function getStartups(options: GetStartupsOptions = {}): Promise<Sta
   const query: Record<string, unknown> = {};
   if (province) query.province = province;
   if (featured) query.featured = true;
+  // Public listing only shows active startups; inactive ones are de-listed.
+  query.status = { $ne: "inactive" };
 
   let cursor = db.collection(collections.startups).find(query).sort({ createdAt: -1 });
   if (limit) cursor = cursor.limit(limit);
@@ -151,13 +153,14 @@ export async function getBySlug(coll: CollectionName, slug: string): Promise<Con
 
 export async function getProvinceCounts(): Promise<Record<string, number>> {
   const db = await getDb();
+  const visible = { status: { $ne: "inactive" } };
   const counts: Record<string, number> = {};
   for (const p of PROVINCES) {
     counts[p.name] = await db
       .collection(collections.startups)
-      .countDocuments({ province: p.name });
+      .countDocuments({ province: p.name, ...visible });
   }
-  counts.Total = await db.collection(collections.startups).countDocuments();
+  counts.Total = await db.collection(collections.startups).countDocuments(visible);
   return counts;
 }
 

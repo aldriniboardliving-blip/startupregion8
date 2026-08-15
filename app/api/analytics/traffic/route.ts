@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb, collections } from "@/lib/mongodb";
 import { isAuthed } from "@/lib/auth";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import type { TrafficData, TrafficPageStat, TrafficRange } from "@/lib/types";
 
 const RANGES: TrafficRange[] = ["day", "week", "month", "year", "all"];
@@ -15,6 +16,8 @@ function rangeToMs(range: TrafficRange): number | null {
 }
 
 export async function GET(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.adminGet);
+  if (limited) return limited;
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

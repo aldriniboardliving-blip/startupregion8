@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb, collections } from "@/lib/mongodb";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 interface TrackBody {
   visitorId?: string;
@@ -8,6 +9,9 @@ interface TrackBody {
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.track);
+  if (limited) return limited;
+
   let body: TrackBody;
   try {
     body = (await req.json()) as TrackBody;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Skeleton } from "@/components/Skeleton";
 
 export interface LinkOption {
   group: string;
@@ -81,27 +82,33 @@ export default function LinkPicker({
 
   return (
     <div className="space-y-2">
-      <select className="input" value={selection} onChange={handleSelect}>
-        <option value="">— No link —</option>
-        {grouped.map((g) => (
-          <optgroup key={g.group} label={g.group}>
-            {g.items.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
+      {!loaded ? (
+        <Skeleton className="h-11 w-full rounded-lg" />
+      ) : (
+        <>
+          <select className="input" value={selection} onChange={handleSelect}>
+            <option value="">— No link —</option>
+            {grouped.map((g) => (
+              <optgroup key={g.group} label={g.group}>
+                {g.items.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
-          </optgroup>
-        ))}
-        <option value={CUSTOM}>Custom URL / direct link…</option>
-      </select>
-      {showCustom && (
-        <input
-          className="input"
-          value={current}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="e.g. https://example.com or /news/my-post"
-          autoComplete="off"
-        />
+            <option value={CUSTOM}>Custom URL / direct link…</option>
+          </select>
+          {showCustom && (
+            <input
+              className="input"
+              value={current}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="e.g. https://example.com or /news/my-post"
+              autoComplete="off"
+            />
+          )}
+        </>
       )}
     </div>
   );

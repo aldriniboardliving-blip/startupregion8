@@ -3,6 +3,7 @@ import { getDb, collections } from "@/lib/mongodb";
 import { isAuthed } from "@/lib/auth";
 import { uniqueSlug, toId, modifyResult } from "@/lib/crud";
 import { toPublicItem } from "@/lib/utils";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import type { ContentDoc } from "@/lib/types";
 
 interface BlogBody {
@@ -30,11 +31,16 @@ function toDoc(body: BlogBody) {
 }
 
 export async function GET(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.publicGet);
+  if (limited) return limited;
+  const authed = await isAuthed();
   const { searchParams } = new URL(req.url);
   const limit = parseInt(searchParams.get("limit") || "0", 10);
   const featured = searchParams.get("featured");
   const db = await getDb();
   const query: Record<string, unknown> = {};
+  // Anonymous visitors only ever see published posts; drafts stay admin-only.
+  if (!authed) query.published = true;
   if (featured === "true") query.featured = true;
   let cursor = db.collection(collections.blogs).find(query).sort({ createdAt: -1 });
   if (limit) cursor = cursor.limit(limit);
@@ -43,6 +49,8 @@ export async function GET(req: Request): Promise<NextResponse> {
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.mutation);
+  if (limited) return limited;
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -65,6 +73,8 @@ export async function POST(req: Request): Promise<NextResponse> {
 }
 
 export async function PUT(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.mutation);
+  if (limited) return limited;
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -90,6 +100,8 @@ export async function PUT(req: Request): Promise<NextResponse> {
 }
 
 export async function DELETE(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.mutation);
+  if (limited) return limited;
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

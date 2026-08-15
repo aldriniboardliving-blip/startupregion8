@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { TrafficData, TrafficRange } from "@/lib/types";
+import { SkeletonTable, SkeletonStatCards, Skeleton } from "@/components/Skeleton";
 
 const RANGE_OPTIONS: { value: TrafficRange; label: string }[] = [
   { value: "day", label: "Today" },
@@ -85,10 +86,15 @@ export default function AdminTrafficPage() {
       </div>
 
       {loading && !data ? (
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="card h-32 animate-pulse bg-slate-100" />
-          ))}
+        <div className="space-y-6">
+          <SkeletonStatCards count={3} />
+          <div className="card p-6">
+            <div className="mb-5 flex items-center justify-between">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-3.5 w-32" />
+            </div>
+            <SkeletonTable columns={4} rows={6} />
+          </div>
         </div>
       ) : error ? (
         <p className="rounded-xl bg-red-50 p-6 text-sm text-red-600">{error}</p>

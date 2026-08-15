@@ -2,6 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const COOKIE_NAME = "sr8_session";
 
+const API_CACHE_CONTROL =
+  "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+
 function base64UrlToBytes(value: string): Uint8Array {
   const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
   const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
@@ -44,6 +47,14 @@ async function isAuthed(req: NextRequest): Promise<boolean> {
   }
 }
 
+function secureResponse(): NextResponse {
+  const res = NextResponse.next();
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  return res;
+}
+
 export async function middleware(req: NextRequest): Promise<NextResponse> {
   const { pathname } = req.nextUrl;
 
@@ -52,23 +63,42 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
   const isPortal =
     pathname === "/sys-portal-x9" || pathname.startsWith("/sys-portal-x9/");
   const isPortalLogin = pathname === "/sys-portal-x9/login";
+  const isApi = pathname === "/api" || pathname.startsWith("/api/");
 
   const authed = await isAuthed(req);
 
+  let res: NextResponse;
+
   // Hidden admin area: unauthenticated visitors see a fake 404 (URL stays /admin/...)
   if (isAdmin || isLegacyLogin) {
-    if (authed) return NextResponse.next();
-    return NextResponse.rewrite(new URL("/404", req.url));
+    if (authed) res = secureResponse();
+    else res = NextResponse.rewrite(new URL("/404", req.url));
   }
-
   // Secret portal: only the login page is reachable; everything under the portal is disguised
-  if (isPortal && !isPortalLogin) {
-    return NextResponse.rewrite(new URL("/404", req.url));
+  else if (isPortal && !isPortalLogin) {
+    res = NextResponse.rewrite(new URL("/404", req.url));
+  } else {
+    res = secureResponse();
   }
 
-  return NextResponse.next();
+  if (isApi) {
+    // API payloads are dynamic: never let CDN/browser caches stale them,
+    // and tighten framing since these responses are JSON, not documents.
+    res.headers.set("Cache-Control", API_CACHE_CONTROL);
+    res.headers.set("Pragma", "no-cache");
+    res.headers.set("X-Frame-Options", "DENY");
+  } else if (!pathname.startsWith("/api")) {
+    res.headers.set("X-Frame-Options", "SAMEORIGIN");
+  }
+
+  return res;
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/login/:path*", "/sys-portal-x9/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/login/:path*",
+    "/sys-portal-x9/:path*",
+    "/api/:path*",
+  ],
 };

@@ -4,10 +4,14 @@ import path from "path";
 import { isAuthed } from "@/lib/auth";
 import { randomBytes } from "crypto";
 import { cloudinaryConfigured, uploadImageBuffer } from "@/lib/cloudinary";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.upload);
+  if (limited) return limited;
+
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

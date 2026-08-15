@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSession, isAuthed } from "@/lib/auth";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 interface LoginBody {
   username?: string;
@@ -7,6 +8,9 @@ interface LoginBody {
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.login);
+  if (limited) return limited;
+
   if (await isAuthed()) {
     return NextResponse.json({ ok: true, message: "Already signed in" });
   }

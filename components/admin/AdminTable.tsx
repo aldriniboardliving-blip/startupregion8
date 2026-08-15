@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { SkeletonTable } from "@/components/Skeleton";
 
 interface AdminRow {
   _id: string;
@@ -89,7 +90,7 @@ export default function AdminTable({
       </div>
 
       {loading ? (
-        <div className="card h-48 animate-pulse bg-slate-100" />
+        <SkeletonTable columns={columns.length + 1} rows={6} />
       ) : error ? (
         <p className="rounded-xl bg-red-50 p-6 text-sm text-red-600">{error}</p>
       ) : rows.length === 0 ? (
