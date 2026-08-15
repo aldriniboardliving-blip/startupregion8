@@ -73,8 +73,12 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {open && (
-        <div className="border-t border-slate-100 bg-white px-4 py-3 md:hidden">
+      <div
+        className={`overflow-hidden border-t border-slate-100 bg-white transition-all duration-300 ease-in-out md:hidden ${
+          open ? "max-h-96 opacity-100" : "max-h-0 border-t-0 opacity-0"
+        }`}
+      >
+        <div className="px-4 py-3">
           {links.map((l) => (
             <Link
               key={l.href}
@@ -86,7 +90,7 @@ export default function Navbar() {
             </Link>
           ))}
         </div>
-      )}
+      </div>
     </header>
   );
 }

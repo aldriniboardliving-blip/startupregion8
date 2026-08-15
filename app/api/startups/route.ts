@@ -3,6 +3,7 @@ import { getDb, collections } from "@/lib/mongodb";
 import { isAuthed } from "@/lib/auth";
 import { normalizeProvince, toPublicStartup } from "@/lib/utils";
 import { resolveStartupSlug } from "@/lib/data";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { ObjectId } from "mongodb";
 import type { FounderInput, Funding, FundingInput, StartupDoc } from "@/lib/types";
 
@@ -25,12 +26,17 @@ interface StartupBody {
 }
 
 export async function GET(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.publicGet);
+  if (limited) return limited;
+  const authed = await isAuthed();
   const { searchParams } = new URL(req.url);
   const province = searchParams.get("province");
   const featured = searchParams.get("featured");
   const query: Record<string, unknown> = {};
   if (province) query.province = normalizeProvince(province);
   if (featured === "true") query.featured = true;
+  // Anonymous visitors don't see inactive/de-listed startups; admins see everything.
+  if (!authed) query.status = { $ne: "inactive" };
 
   const db = await getDb();
   const startups = (await db
@@ -75,6 +81,8 @@ export async function GET(req: Request): Promise<NextResponse> {
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.mutation);
+  if (limited) return limited;
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -155,6 +163,8 @@ export async function POST(req: Request): Promise<NextResponse> {
 }
 
 export async function DELETE(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.mutation);
+  if (limited) return limited;
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

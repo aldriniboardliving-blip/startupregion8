@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { PROVINCES } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
 import StartupCard from "@/components/StartupCard";
+import { SkeletonStartupCard } from "@/components/Skeleton";
 import type { Startup } from "@/lib/types";
 
 interface ProvinceExplorerProps {
@@ -121,7 +122,7 @@ export default function ProvinceExplorer({ initialCounts }: ProvinceExplorerProp
             {loading ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="card h-72 animate-pulse bg-slate-100" />
+                  <SkeletonStartupCard key={i} />
                 ))}
               </div>
             ) : error ? (

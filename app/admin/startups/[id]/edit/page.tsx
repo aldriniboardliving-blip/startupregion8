@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import StartupForm from "@/components/admin/StartupForm";
+import { SkeletonForm } from "@/components/Skeleton";
 import type { Startup } from "@/lib/types";
 
 export default function EditStartupPage() {
@@ -22,7 +23,7 @@ export default function EditStartupPage() {
       .finally(() => setLoading(false));
   }, [params.id]);
 
-  if (loading) return <div className="card h-48 animate-pulse bg-slate-100" />;
+  if (loading) return <SkeletonForm lines={8} />;
   if (error) return <p className="rounded-xl bg-red-50 p-6 text-sm text-red-600">{error}</p>;
 
   return <StartupForm initial={item ?? undefined} />;

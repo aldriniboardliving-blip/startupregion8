@@ -11,6 +11,7 @@ const links = [
   { href: "/admin/blogs", label: "Blogs", icon: "✍️" },
   { href: "/admin/carousel", label: "Carousel", icon: "🎠" },
   { href: "/admin/government", label: "Government", icon: "🏛️" },
+  { href: "/admin/analytics", label: "Analytics", icon: "📈" },
 ];
 
 interface AdminNavProps {

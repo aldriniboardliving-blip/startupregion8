@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAuthed } from "@/lib/auth";
 import { getDb, collections } from "@/lib/mongodb";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -15,7 +16,9 @@ interface SluggedDoc {
   slug?: unknown;
 }
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.adminGet);
+  if (limited) return limited;
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

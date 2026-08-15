@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { normalizeContentHtml } from "@/lib/content";
 
 interface Tool {
   label: string;
@@ -37,6 +38,7 @@ export default function RichTextEditor({
   hint = "Supports basic HTML: <b>, <i>, <h2>, <h3>, <p>, <ul>, <ol>, <a>, <blockquote>",
 }: RichTextEditorProps) {
   const ref = useRef<HTMLTextAreaElement | null>(null);
+  const [mode, setMode] = useState<"edit" | "preview">("edit");
 
   function apply(htmlFn: (s: string) => string): void {
     const el = ref.current;
@@ -55,26 +57,60 @@ export default function RichTextEditor({
 
   return (
     <div>
-      <label className="label">{label}</label>
-      <div className="mb-2 flex flex-wrap gap-1">
-        {tools.map((t) => (
-          <button
-            key={t.label}
-            type="button"
-            onClick={() => apply(t.html)}
-            className={`rounded border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:border-brand-500 hover:text-brand-600 ${t.className}`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="mb-1.5 flex items-center justify-between gap-3">
+        <label className="label mb-0">{label}</label>
+        <div className="flex rounded-lg bg-slate-100 p-0.5">
+          {(["edit", "preview"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              className={`rounded-md px-3 py-1 text-xs font-semibold capitalize transition ${
+                mode === m
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
       </div>
-      <textarea
-        ref={ref}
-        className="input font-mono text-xs leading-relaxed"
-        rows={rows}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-      />
+
+      {mode === "preview" ? (
+        <div className="max-h-96 min-h-56 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-5">
+          {value?.trim() ? (
+            <div
+              className="prose-content"
+              dangerouslySetInnerHTML={{ __html: normalizeContentHtml(value) }}
+            />
+          ) : (
+            <p className="text-sm text-slate-400">Nothing to preview yet.</p>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="mb-2 flex flex-wrap gap-1">
+            {tools.map((t) => (
+              <button
+                key={t.label}
+                type="button"
+                onClick={() => apply(t.html)}
+                className={`rounded border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:border-brand-500 hover:text-brand-600 ${t.className}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <textarea
+            ref={ref}
+            className="input font-mono text-xs leading-relaxed"
+            rows={rows}
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        </>
+      )}
       <p className="mt-1 text-xs text-slate-400">{hint}</p>
     </div>
   );

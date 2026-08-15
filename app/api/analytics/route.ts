@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { getDb, collections } from "@/lib/mongodb";
 import { isAuthed } from "@/lib/auth";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { PROVINCES } from "@/lib/utils";
 import type { AnalyticsData } from "@/lib/types";
 
 export async function GET(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.adminGet);
+  if (limited) return limited;
   if (!(await isAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

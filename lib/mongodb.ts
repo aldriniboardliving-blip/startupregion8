@@ -38,6 +38,7 @@ export const collections = {
   blogs: "blogs",
   carousel: "carousel_items",
   government: "government_pages",
+  visits: "analytics_visits",
 } as const;
 
 export async function ensureIndexes(db: Db): Promise<void> {
@@ -49,5 +50,7 @@ export async function ensureIndexes(db: Db): Promise<void> {
     db.collection(collections.fundings).createIndex({ startupId: 1 }),
     db.collection(collections.startups).createIndex({ province: 1 }),
     db.collection(collections.startups).createIndex({ slug: 1 }, { unique: true, sparse: true }),
+    db.collection(collections.visits).createIndex({ visitorId: 1, visitedAt: -1 }),
+    db.collection(collections.visits).createIndex({ path: 1 }),
   ]);
 }

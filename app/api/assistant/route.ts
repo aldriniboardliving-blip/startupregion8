@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { answerQuestion } from "@/lib/assistant";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request): Promise<NextResponse> {
+  const limited = withRateLimit(req, RATE_LIMITS.assistant);
+  if (limited) return limited;
+
   let body: { message?: string };
   try {
     body = (await req.json()) as { message?: string };

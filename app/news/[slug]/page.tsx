@@ -6,6 +6,7 @@ import ArticleCard from "@/components/ArticleCard";
 import { getBySlug, getNews } from "@/lib/data";
 import { collections } from "@/lib/mongodb";
 import { formatDate } from "@/lib/utils";
+import { normalizeContentHtml } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -108,7 +109,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
 
         <div
           className="prose-content mt-8"
-          dangerouslySetInnerHTML={{ __html: item.content || "" }}
+          dangerouslySetInnerHTML={{ __html: normalizeContentHtml(item.content || "") }}
         />
       </div>
 
